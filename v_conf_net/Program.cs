@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using v_conf_net.Models;   // or the namespace where AppDbContext exists
+using v_conf_net.Models;
+using v_conf_net.Services;
+using v_conf_net.Services.Interfaces;   // or the namespace where AppDbContext exists
 
 namespace v_conf_net
 {
@@ -15,6 +17,10 @@ namespace v_conf_net
         builder.Configuration.GetConnectionString("DefaultConnection"),
         ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
     ));
+
+            builder.Services.AddScoped<ILookupService, LookupService>();
+            builder.Services.AddScoped<IDefaultConfigService, DefaultConfigService>();
+
 
 
             builder.Services.AddControllers();
