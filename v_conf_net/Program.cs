@@ -20,10 +20,44 @@ namespace v_conf_net
 
             builder.Services.AddScoped<ILookupService, LookupService>();
             builder.Services.AddScoped<IDefaultConfigService, DefaultConfigService>();
+            builder.Services.AddScoped<IAuthService, AuthService>(); // Register Auth Service using v_conf_net.Services;
+
+            // Add JWT Authentication
+            var key = System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(key)
+                };
+            });
 
 
 
             builder.Services.AddControllers();
+
+            // Add CORS 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowReactApp",
+                    policy =>
+                    {
+                        policy.WithOrigins("http://localhost:5173") // React Vite Server
+                              .AllowAnyHeader()
+                              .AllowAnyMethod();
+                    });
+            });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -39,9 +73,11 @@ namespace v_conf_net
 
             app.UseHttpsRedirection();
 
+            app.UseCors("AllowReactApp"); // Must be before Auth
+
+            app.UseAuthentication();
             app.UseAuthorization();
-
-
+            
             app.MapControllers();
 
             app.Run();
