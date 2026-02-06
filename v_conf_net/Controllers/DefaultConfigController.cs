@@ -17,7 +17,7 @@ public class DefaultConfigController : ControllerBase
     // ======================================
     // GET /api/default-config/101?qty=5
     // ======================================
-    [HttpGet("{modelId}")]
+    [HttpGet("conf/{modelId}")]
     public async Task<IActionResult> Get(int modelId, [FromQuery] int qty = 1)
     {
         var result = await _service.GetDefaultConfigAsync(modelId, qty);
@@ -25,6 +25,6 @@ public class DefaultConfigController : ControllerBase
         if (result == null)
             return NotFound();
 
-        return Ok(result);
+        return Ok(result.Components);
     }
 }

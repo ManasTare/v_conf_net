@@ -21,8 +21,12 @@ namespace v_conf_net
             builder.Services.AddScoped<ILookupService, LookupService>();
             builder.Services.AddScoped<IDefaultConfigService, DefaultConfigService>();
             builder.Services.AddScoped<IAuthService, AuthService>(); // Register Auth Service using v_conf_net.Services;
+            builder.Services.AddScoped<IInvoiceService, InvoiceService>(); // Register Invoice Service (Monolith)
+            builder.Services.AddScoped<IUserService, UserService>(); // Register User Service for Registration
+            builder.Services.AddScoped<IVehicleConfigService, VehicleConfigService>(); // Register Vehicle Config Service
 
             // Add JWT Authentication
+            System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear(); // Prevent remapping of claims (e.g. sub -> nameidentifier)
             var key = System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
             builder.Services.AddAuthentication(options =>
             {
@@ -71,7 +75,7 @@ namespace v_conf_net
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection(); // Disabled to prevent warning: Failed to determine the https port for redirect.
 
             app.UseCors("AllowReactApp"); // Must be before Auth
 
